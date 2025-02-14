@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MiStream - Panel Admin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Contenedor de login para el administrador -->
+  <div id="adminLoginContainer" class="admin-container">
+    <h2>Login Administrador</h2>
+    <form id="adminLoginForm">
+      <div class="form-group">
+        <label for="adminUser">Usuario</label>
+        <input type="text" id="adminUser" required>
+      </div>
+      <div class="form-group">
+        <label for="adminPass">Contraseña</label>
+        <input type="password" id="adminPass" required>
+      </div>
+      <button type="submit" class="btn-submit">Iniciar Sesión</button>
+      <p class="error-message" id="loginError"></p>
+    </form>
+  </div>
+
+  <!-- Panel de administración (se muestra tras login) -->
+  <div id="adminPanelContainer" class="admin-container" style="display:none;">
+    <h2>Panel de Administración</h2>
+    <button id="btnAddMovie" class="btn-submit">Agregar Nueva Película/Serie</button>
+    <div id="moviesAdminList">
+      <!-- Aquí se listarán los contenidos para editar/borrar -->
+    </div>
+  </div>
+
+  <!-- Modal para agregar/editar contenido -->
+  <div id="movieModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="movieModalClose">&times;</span>
+      <h3 id="movieModalTitle">Agregar/Editar Película/Serie</h3>
+      <form id="movieForm">
+        <div class="form-group">
+          <label for="movieTitle">Título</label>
+          <input type="text" id="movieTitle" required>
+        </div>
+        <div class="form-group">
+          <label for="movieCover">URL de la Portada</label>
+          <input type="url" id="movieCover" required>
+        </div>
+        <div class="form-group">
+          <label for="movieCategory">Categoría</label>
+          <select id="movieCategory" required>
+            <option value="pelicula">Película</option>
+            <option value="serie">Serie</option>
+            <option value="recomendado">Recomendado</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-submit">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para administrar temporadas y episodios -->
+  <div id="seasonsModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="seasonsModalClose">&times;</span>
+      <h3>Administrar Temporadas y Episodios</h3>
+      <div id="seasonsContainer">
+        <!-- Se inyectarán las temporadas y episodios -->
+      </div>
+      <button id="btnAddSeason" class="btn-submit">Agregar Temporada</button>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

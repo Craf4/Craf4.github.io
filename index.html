@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MiStream - Inicio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header con logo, navegación y buscador -->
+  <header>
+    <div class="logo">MiStream</div>
+    <nav>
+      <ul>
+        <li><a href="#">Inicio</a></li>
+        <li><a href="admin.html">Admin</a></li>
+      </ul>
+    </nav>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Buscar...">
+    </div>
+  </header>
+
+  <!-- Contenedor de filtros (etiquetas) -->
+  <div class="filter-container">
+    <button class="filter-btn" data-filter="all">Todos</button>
+    <button class="filter-btn" data-filter="pelicula">Películas</button>
+    <button class="filter-btn" data-filter="serie">Series</button>
+    <button class="filter-btn" data-filter="recomendado">Recomendados</button>
+  </div>
+
+  <main>
+    <!-- Sección de grid para películas y series -->
+    <section id="moviesGrid">
+      <!-- Se inyectarán las cards de cada contenido que NO sea recomendado (o según filtro) -->
+    </section>
+
+    <!-- Sección de carrusel para contenidos recomendados -->
+    <section id="recommendedCarousel" class="carousel-section">
+      <h2>Recomendados</h2>
+      <div class="carousel-container">
+        <!-- Se inyectarán las cards recomendadas -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal para mostrar temporadas y episodios -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="detailsClose">&times;</span>
+      <div id="movieDetails">
+        <!-- Se mostrarán las temporadas y episodios del contenido seleccionado -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para reproducir video (episodio) -->
+  <div id="videoModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="videoClose">&times;</span>
+      <div id="videoContainer">
+        <!-- Se inyectará el código embed del video -->
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

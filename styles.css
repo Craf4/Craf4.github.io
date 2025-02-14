@@ -1,0 +1,278 @@
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Fuente y fondo general */
+body {
+  font-family: 'Roboto', sans-serif;
+  background: #141414;
+  color: #fff;
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: #000;
+}
+
+header .logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+header nav ul {
+  list-style: none;
+  display: flex;
+}
+
+header nav ul li {
+  margin-left: 1rem;
+}
+
+header nav ul li a {
+  text-decoration: none;
+  color: #fff;
+  transition: color 0.3s;
+}
+
+header nav ul li a:hover {
+  color: #b3b3b3;
+}
+
+.search-container {
+  margin-left: auto;
+}
+
+.search-container input {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: none;
+}
+
+/* Filtro de categorías */
+.filter-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #1a1a1a;
+}
+
+.filter-btn {
+  background: #222;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+  background: #e50914;
+}
+
+/* Sección de grid para películas y series */
+#moviesGrid {
+  padding: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.movie-card {
+  background: #222;
+  width: 200px;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.movie-card:hover {
+  transform: scale(1.05);
+}
+
+.movie-card img {
+  width: 100%;
+}
+
+.movie-card .movie-info {
+  padding: 0.5rem;
+  text-align: center;
+}
+
+/* Sección de carrusel para recomendados */
+.carousel-section {
+  margin: 2rem 0;
+}
+
+.carousel-section h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.carousel-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding: 0 2rem 1rem;
+}
+
+.carousel-container .movie-card {
+  width: 250px; /* Cartas más grandes para destacar */
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: #000;
+  color: #b3b3b3;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: rgba(0,0,0,0.8);
+}
+
+.modal-content {
+  background: #141414;
+  margin: 5% auto;
+  padding: 1rem;
+  width: 90%;
+  max-width: 800px;
+  position: relative;
+  border-radius: 4px;
+}
+
+.modal .close {
+  color: #fff;
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Contenedores de administración */
+.admin-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  background: #222;
+  padding: 2rem;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.admin-container h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Formularios */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #141414;
+  color: #fff;
+}
+
+/* Botones */
+.btn-submit {
+  background: #e50914;
+  border: none;
+  padding: 0.75rem;
+  width: 100%;
+  color: #fff;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-submit:hover {
+  background: #f40612;
+}
+
+.error-message {
+  color: #e50914;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* Listado de contenidos en el panel admin */
+#moviesAdminList {
+  margin-top: 1rem;
+}
+
+.movie-item {
+  background: #333;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.movie-item img {
+  width: 80px;
+  border-radius: 4px;
+  margin-right: 1rem;
+}
+
+.movie-item .movie-actions button {
+  margin-left: 0.5rem;
+}
+
+/* Media queries para dispositivos móviles */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: center;
+  }
+  .search-container {
+    margin-top: 0.5rem;
+    width: 90%;
+  }
+  #moviesGrid {
+    padding: 1rem;
+  }
+  .movie-card {
+    width: 45%;
+    margin-bottom: 1rem;
+  }
+  .carousel-container .movie-card {
+    width: 70%;
+  }
+}
