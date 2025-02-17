@@ -1,6 +1,6 @@
-// admin.js – Panel de Administración
+// admin.js – Panel de Administración (actualizado para usar backend)
 
-// Función para verificar login (usando sessionStorage)
+// Verificar login simple (usando sessionStorage, esto se mantiene igual)
 function checkAdmin() {
   return sessionStorage.getItem('adminLogged') === 'true';
 }
@@ -24,9 +24,10 @@ document.getElementById('adminLoginForm').addEventListener('submit', function(e)
   }
 });
 
-// Cargar contenidos para administración
-function loadAdminMovies() {
-  const movies = JSON.parse(localStorage.getItem('movies')) || [];
+// Cargar contenidos para administración desde el backend
+async function loadAdminMovies() {
+  const response = await fetch('http://localhost:3000/movies');
+  const movies = await response.json();
   const list = document.getElementById('moviesAdminList');
   list.innerHTML = '';
   movies.forEach(movie => {
@@ -47,11 +48,7 @@ function loadAdminMovies() {
   });
 }
 
-// Generar un ID único
-function generateId() {
-  return '_' + Math.random().toString(36).substr(2, 9);
-}
-
+// Variables para controlar edición
 let editingMovieId = null;
 const movieModal = document.getElementById('movieModal');
 const movieForm = document.getElementById('movieForm');
@@ -69,69 +66,68 @@ document.getElementById('movieModalClose').addEventListener('click', function() 
   movieModal.style.display = 'none';
 });
 
-// Guardar (agregar/editar) contenido
-movieForm.addEventListener('submit', function(e) {
+// Guardar (agregar o editar) contenido usando POST o PUT
+movieForm.addEventListener('submit', async function(e) {
   e.preventDefault();
   const title = document.getElementById('movieTitle').value.trim();
   const cover = document.getElementById('movieCover').value.trim();
   const category = document.getElementById('movieCategory').value;
-  let movies = JSON.parse(localStorage.getItem('movies')) || [];
   if (editingMovieId) {
-    movies = movies.map(movie => {
-      if (movie.id === editingMovieId) {
-        movie.title = title;
-        movie.cover = cover;
-        movie.category = category;
-      }
-      return movie;
+    // Actualizar contenido existente
+    await fetch(`http://localhost:3000/movies/${editingMovieId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, cover, category })
     });
   } else {
-    const newMovie = {
-      id: generateId(),
-      title,
-      cover,
-      category,
-      seasons: [] // inicialmente sin temporadas
-    };
-    movies.push(newMovie);
+    // Agregar nuevo contenido
+    await fetch('http://localhost:3000/movies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, cover, category, seasons: [] })
+    });
   }
-  localStorage.setItem('movies', JSON.stringify(movies));
   movieModal.style.display = 'none';
   loadAdminMovies();
 });
 
-function editMovie(id) {
-  editingMovieId = id;
-  const movies = JSON.parse(localStorage.getItem('movies')) || [];
+// Editar contenido: cargar datos en el formulario
+async function editMovie(id) {
+  const response = await fetch('http://localhost:3000/movies');
+  const movies = await response.json();
   const movie = movies.find(m => m.id === id);
   if (movie) {
     document.getElementById('movieTitle').value = movie.title;
     document.getElementById('movieCover').value = movie.cover;
     document.getElementById('movieCategory').value = movie.category;
     document.getElementById('movieModalTitle').textContent = "Editar Película/Serie";
+    editingMovieId = id;
     movieModal.style.display = 'block';
   }
 }
 
-function deleteMovie(id) {
-  let movies = JSON.parse(localStorage.getItem('movies')) || [];
-  movies = movies.filter(m => m.id !== id);
-  localStorage.setItem('movies', JSON.stringify(movies));
+// Borrar contenido
+async function deleteMovie(id) {
+  await fetch(`http://localhost:3000/movies/${id}`, {
+    method: 'DELETE'
+  });
   loadAdminMovies();
 }
 
 // Gestión de temporadas y episodios
+// Se reutiliza la estructura interna del objeto; luego de modificar, se actualiza vía PUT
+
 function manageSeasons(movieId) {
-  const seasonsModal = document.getElementById('seasonsModal');
-  seasonsModal.style.display = 'block';
-  loadSeasons(movieId);
+  document.getElementById('seasonsModal').style.display = 'block';
   currentMovieIdForSeasons = movieId;
+  loadSeasons(movieId);
 }
 
 let currentMovieIdForSeasons = null;
 
-function loadSeasons(movieId) {
-  const movies = JSON.parse(localStorage.getItem('movies')) || [];
+async function loadSeasons(movieId) {
+  const response = await fetch('http://localhost:3000/movies');
+  const movies = await response.json();
   const movie = movies.find(m => m.id === movieId);
   const container = document.getElementById('seasonsContainer');
   container.innerHTML = '';
@@ -176,37 +172,55 @@ function loadSeasons(movieId) {
 // Agregar temporada
 document.getElementById('btnAddSeason').addEventListener('click', function() {
   if (!currentMovieIdForSeasons) return;
-  let movies = JSON.parse(localStorage.getItem('movies')) || [];
-  const movie = movies.find(m => m.id === currentMovieIdForSeasons);
-  if (movie) {
-    const newSeasonNumber = movie.seasons.length > 0 ? movie.seasons[movie.seasons.length - 1].number + 1 : 1;
-    movie.seasons.push({ number: newSeasonNumber, episodes: [] });
-    localStorage.setItem('movies', JSON.stringify(movies));
-    loadSeasons(currentMovieIdForSeasons);
-    loadAdminMovies();
-  }
+  addSeason(currentMovieIdForSeasons);
 });
 
-// Agregar episodio (se usan prompt para simplificar)
-function addEpisode(movieId, seasonNumber) {
+async function addSeason(movieId) {
+  const response = await fetch('http://localhost:3000/movies');
+  const movies = await response.json();
+  const movie = movies.find(m => m.id === movieId);
+  if (movie) {
+    const newSeasonNumber = movie.seasons && movie.seasons.length > 0 ? movie.seasons[movie.seasons.length - 1].number + 1 : 1;
+    if (!movie.seasons) movie.seasons = [];
+    movie.seasons.push({ number: newSeasonNumber, episodes: [] });
+    await fetch(`http://localhost:3000/movies/${movieId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(movie)
+    });
+    loadSeasons(movieId);
+    loadAdminMovies();
+  }
+}
+
+// Agregar episodio
+async function addEpisode(movieId, seasonNumber) {
   const episodeTitle = prompt("Ingrese título del episodio:");
   const episodeEmbed = prompt("Ingrese código/embed del video:");
   if (!episodeTitle || !episodeEmbed) return;
-  let movies = JSON.parse(localStorage.getItem('movies')) || [];
+  const response = await fetch('http://localhost:3000/movies');
+  const movies = await response.json();
   const movie = movies.find(m => m.id === movieId);
   if (movie) {
     const season = movie.seasons.find(s => s.number === seasonNumber);
     if (season) {
-      const newEpisodeNumber = season.episodes.length > 0 ? season.episodes[season.episodes.length - 1].number + 1 : 1;
+      const newEpisodeNumber = season.episodes && season.episodes.length > 0 ? season.episodes[season.episodes.length - 1].number + 1 : 1;
+      if (!season.episodes) season.episodes = [];
       season.episodes.push({ number: newEpisodeNumber, title: episodeTitle, embed: episodeEmbed });
-      localStorage.setItem('movies', JSON.stringify(movies));
+      await fetch(`http://localhost:3000/movies/${movieId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(movie)
+      });
       loadSeasons(movieId);
     }
   }
 }
 
-function editEpisode(movieId, seasonNumber, episodeNumber) {
-  let movies = JSON.parse(localStorage.getItem('movies')) || [];
+// Editar episodio
+async function editEpisode(movieId, seasonNumber, episodeNumber) {
+  const response = await fetch('http://localhost:3000/movies');
+  const movies = await response.json();
   const movie = movies.find(m => m.id === movieId);
   if (movie) {
     const season = movie.seasons.find(s => s.number === seasonNumber);
@@ -218,7 +232,11 @@ function editEpisode(movieId, seasonNumber, episodeNumber) {
         if (newTitle && newEmbed) {
           episode.title = newTitle;
           episode.embed = newEmbed;
-          localStorage.setItem('movies', JSON.stringify(movies));
+          await fetch(`http://localhost:3000/movies/${movieId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(movie)
+          });
           loadSeasons(movieId);
         }
       }
@@ -226,25 +244,37 @@ function editEpisode(movieId, seasonNumber, episodeNumber) {
   }
 }
 
-function deleteEpisode(movieId, seasonNumber, episodeNumber) {
-  let movies = JSON.parse(localStorage.getItem('movies')) || [];
+// Borrar episodio
+async function deleteEpisode(movieId, seasonNumber, episodeNumber) {
+  const response = await fetch('http://localhost:3000/movies');
+  const movies = await response.json();
   const movie = movies.find(m => m.id === movieId);
   if (movie) {
     const season = movie.seasons.find(s => s.number === seasonNumber);
     if (season) {
       season.episodes = season.episodes.filter(e => e.number !== episodeNumber);
-      localStorage.setItem('movies', JSON.stringify(movies));
+      await fetch(`http://localhost:3000/movies/${movieId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(movie)
+      });
       loadSeasons(movieId);
     }
   }
 }
 
-function deleteSeason(movieId, seasonNumber) {
-  let movies = JSON.parse(localStorage.getItem('movies')) || [];
+// Borrar temporada
+async function deleteSeason(movieId, seasonNumber) {
+  const response = await fetch('http://localhost:3000/movies');
+  const movies = await response.json();
   const movie = movies.find(m => m.id === movieId);
   if (movie) {
     movie.seasons = movie.seasons.filter(s => s.number !== seasonNumber);
-    localStorage.setItem('movies', JSON.stringify(movies));
+    await fetch(`http://localhost:3000/movies/${movieId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(movie)
+    });
     loadSeasons(movieId);
     loadAdminMovies();
   }

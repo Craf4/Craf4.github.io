@@ -1,16 +1,17 @@
-// script.js – Página principal
+// script.js – Página principal (actualizado para usar backend)
 
-let currentFilter = "all"; // valor inicial del filtro
+let currentFilter = "all"; // filtro por defecto
 
-// Función para cargar los contenidos desde localStorage
-function loadMovies() {
-  const movies = JSON.parse(localStorage.getItem('movies')) || [];
+// Función para cargar los contenidos desde el servidor
+async function loadMovies() {
+  const response = await fetch('http://localhost:3000/movies');
+  const movies = await response.json();
   return movies;
 }
 
-// Función para renderizar los contenidos en la sección de grid y carrusel
-function renderMovies() {
-  const allMovies = loadMovies();
+// Función para renderizar los contenidos en grid y carrusel
+async function renderMovies() {
+  const allMovies = await loadMovies();
   const searchQuery = document.getElementById('searchInput').value.toLowerCase();
 
   // Filtrar según búsqueda
@@ -18,16 +19,16 @@ function renderMovies() {
     movie.title.toLowerCase().includes(searchQuery)
   );
 
-  // Si se ha seleccionado un filtro específico (excepto "all")
-  if(currentFilter !== "all") {
+  // Aplicar filtro de categoría si no es "all"
+  if (currentFilter !== "all") {
     filtered = filtered.filter(movie => movie.category === currentFilter);
   }
 
-  // Separa los contenidos recomendados de los demás
+  // Separar los contenidos recomendados de los demás
   const recommended = filtered.filter(movie => movie.category === "recomendado");
   const gridMovies = filtered.filter(movie => movie.category !== "recomendado");
 
-  // Mostrar en grid (moviesGrid) si no se está filtrando exclusivamente "recomendado"
+  // Renderizar en grid (para películas y series)
   const moviesGrid = document.getElementById('moviesGrid');
   moviesGrid.innerHTML = "";
   if (currentFilter !== "recomendado") {
@@ -46,7 +47,7 @@ function renderMovies() {
     });
   }
 
-  // Mostrar en carrusel si el filtro es "recomendado" o si hay recomendados y el filtro es "all"
+  // Renderizar en carrusel (para recomendados)
   const carouselSection = document.getElementById('recommendedCarousel');
   const carouselContainer = carouselSection.querySelector('.carousel-container');
   carouselContainer.innerHTML = "";
@@ -64,14 +65,13 @@ function renderMovies() {
       card.addEventListener('click', () => openDetailsModal(movie));
       carouselContainer.appendChild(card);
     });
-    // Mostrar sección si hay contenido
     carouselSection.style.display = "block";
   } else {
     carouselSection.style.display = "none";
   }
 }
 
-// Abre el modal con las temporadas y episodios del contenido
+// Abre el modal con temporadas y episodios
 function openDetailsModal(movie) {
   const detailsModal = document.getElementById('detailsModal');
   const movieDetails = document.getElementById('movieDetails');
@@ -100,7 +100,7 @@ function openDetailsModal(movie) {
     movieDetails.innerHTML += `<p>No se han agregado temporadas.</p>`;
   }
   
-  document.getElementById('detailsModal').style.display = 'block';
+  detailsModal.style.display = 'block';
 }
 
 // Abre el modal del video y carga el código embed
@@ -120,13 +120,10 @@ document.getElementById('videoClose').addEventListener('click', () => {
   document.getElementById('videoContainer').innerHTML = '';
 });
 
-// Buscador: actualiza la visualización al escribir
+// Actualizar la visualización con el buscador y filtros
 document.getElementById('searchInput').addEventListener('input', renderMovies);
-
-// Filtro por categoría: al hacer clic en cada botón
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    // Remover clase "active" de todos y agregar al botón seleccionado
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.getAttribute('data-filter');
@@ -134,5 +131,5 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   });
 });
 
-// Cargar contenidos al inicio
+// Cargar contenidos al iniciar la página
 document.addEventListener('DOMContentLoaded', renderMovies);
